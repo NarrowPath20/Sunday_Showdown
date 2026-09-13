@@ -2,6 +2,14 @@
 
 A dependency-free, host-led classroom trivia game inspired by the familiar category-and-clue format of televised quiz shows. It supports live family-friendly questions, private CSV/JSON imports, a ready-to-play Bible board, multiple teams, scoring, undo, timers, configurable hidden wager clues, Final Challenge, fullscreen play, custom MP3 background music, light/dark setup themes, sounds, and automatic local saving.
 
+## Hosted game
+
+The repository includes a GitHub Actions workflow that publishes the static game to GitHub Pages after every push to `master`. The expected public address is:
+
+**https://narrowpath20.github.io/Sunday_Showdown/**
+
+In the repository's **Settings → Pages** screen, set **Source** to **GitHub Actions** the first time the site is deployed.
+
 ## Start the game
 
 Node 18 or newer is the only requirement.
