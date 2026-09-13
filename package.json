@@ -1,0 +1,14 @@
+{
+  "name": "sunday-showdown",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A polished, host-led, Jeopardy-inspired classroom trivia game.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test core.test.js",
+    "check": "node --check app.js && node --check core.js && node --check data.js && node --check server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

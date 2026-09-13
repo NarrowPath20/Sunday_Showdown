@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071a43">
+  <meta name="description" content="A host-led, Jeopardy-inspired classroom trivia game with live and custom question boards.">
+  <link rel="icon" type="image/png" href="WOW%20YOUTH.png">
+  <link rel="apple-touch-icon" href="WOW%20YOUTH.png">
+  <title>Sunday Showdown</title>
+  <script>
+    try {
+      const savedAppearance = JSON.parse(localStorage.getItem("sunday-showdown-settings-v1") || "null");
+      document.documentElement.dataset.theme = savedAppearance && savedAppearance.theme === "dark" ? "dark" : "light";
+    } catch (_) {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to game</a>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="site-header">
+      <button class="brand" id="brand-button" type="button" aria-label="Return to game setup">
+        <span class="brand-mark" aria-hidden="true"><img src="WOW%20YOUTH.png" alt=""></span>
+        <span class="brand-copy">
+          <span class="brand-kicker">Host console</span>
+          <span class="brand-name">Sunday <em>Showdown</em></span>
+        </span>
+      </button>
+
+      <div class="header-actions">
+        <span class="connection-pill" id="connection-pill">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="connection-label">Ready to play</span>
+        </span>
+        <button class="icon-button" id="theme-button" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.3A8.3 8.3 0 0 1 8.7 3.8 8.5 8.5 0 1 0 20.2 15.3Z"/></svg>
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5h1v3h-2V2h1Zm0 17h1v3h-2v-3h1ZM2 11h3v2H2v-2Zm17 0h3v2h-3v-2ZM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4-2.1-2.1Zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4-2.1-2.1ZM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1-1.4-1.4ZM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1-1.4-1.4Z"/></svg>
+        </button>
+        <div class="music-menu">
+          <button class="icon-button" id="music-button" type="button" aria-label="Open background music controls" aria-controls="music-popover" aria-expanded="false" title="Background music">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v12.3A3.5 3.5 0 1 0 11 19V8h8v6.3A3.5 3.5 0 1 0 21 17V4H9Z"/></svg>
+            <span class="music-playing-dot" aria-hidden="true"></span>
+          </button>
+          <section class="music-popover" id="music-popover" role="dialog" aria-labelledby="music-panel-title" hidden>
+            <header>
+              <div>
+                <span>Game audio</span>
+                <h2 id="music-panel-title">Background music</h2>
+              </div>
+              <button class="music-close" id="music-close-button" type="button" aria-label="Close background music controls">×</button>
+            </header>
+
+            <input id="music-file-input" type="file" accept=".mp3,audio/mpeg" multiple hidden>
+            <div class="music-empty" id="music-empty">
+              <span class="music-empty-icon" aria-hidden="true">♫</span>
+              <strong>Add your own soundtrack</strong>
+              <p>Choose one or more MP3 files. They stay on this device and play throughout the game.</p>
+              <button class="button button-gold" id="music-choose-button" type="button">Choose MP3 files</button>
+            </div>
+
+            <div class="music-player" id="music-player" hidden>
+              <div class="now-playing">
+                <span>Now playing</span>
+                <strong id="music-track-name">No track selected</strong>
+                <small id="music-track-count">Track 0 of 0</small>
+              </div>
+              <div class="music-transport">
+                <button id="music-previous-button" type="button" aria-label="Previous background track">↶</button>
+                <button class="music-play" id="music-play-button" type="button" aria-label="Play background music">▶</button>
+                <button id="music-next-button" type="button" aria-label="Next background track">↷</button>
+              </div>
+              <label class="music-volume" for="music-volume-input">
+                <span>Volume</span>
+                <input id="music-volume-input" type="range" min="0" max="100" value="28">
+                <output id="music-volume-value">28%</output>
+              </label>
+              <label class="music-loop-row">
+                <input id="music-loop-input" type="checkbox" checked>
+                <span>Loop playlist</span>
+              </label>
+              <div class="music-library-actions">
+                <button class="text-button" id="music-replace-button" type="button">Replace tracks</button>
+                <button class="text-button danger-text" id="music-clear-button" type="button">Clear playlist</button>
+              </div>
+            </div>
+            <p class="music-session-note">For privacy, browser-selected tracks are remembered only for this visit.</p>
+          </section>
+        </div>
+        <button class="icon-button" id="sound-button" type="button" aria-label="Mute all audio" title="Mute all audio">
+          <svg class="icon icon-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 17.5 12Z"/><path d="M15 3.74v2.09a7 7 0 0 1 0 12.34v2.09A9 9 0 0 0 15 3.74Z"/></svg>
+          <svg class="icon icon-sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3c0-.7-.2-1.36-.55-1.91l-1.46 1.46c.01.15.01.3.01.45 0 1.07-.58 2.01-1.45 2.52v2.2A5 5 0 0 0 16.5 12Z"/><path d="m19.78 3-1.27 1.27A9 9 0 0 1 15 20.26v-2.09a7 7 0 0 0 2.08-12.47L15.9 6.88 14.49 5.46 17.95 2 19.78 3ZM3.22 2 2 3.22 20.78 22 22 20.78 3.22 2Z"/></svg>
+        </button>
+        <button class="icon-button" id="fullscreen-button" type="button" aria-label="Enter fullscreen" title="Enter fullscreen">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="screen setup-screen is-active" id="setup-screen" aria-labelledby="setup-title">
+        <div class="setup-hero">
+          <div>
+            <p class="eyebrow"><span></span> Your room. Your teams. Your board.</p>
+            <h1 id="setup-title">Turn any room into a <span>showdown.</span></h1>
+            <p class="hero-copy">Create a polished game board in seconds, or bring questions made for your group.</p>
+          </div>
+          <div class="hero-stats" aria-label="Default board details">
+            <div><strong>6</strong><span>Categories</span></div>
+            <div><strong>30</strong><span>Clues</span></div>
+            <div><strong>∞</strong><span>Replay value</span></div>
+          </div>
+        </div>
+
+        <aside class="resume-banner" id="resume-banner" hidden>
+          <div class="resume-icon" aria-hidden="true">↻</div>
+          <div>
+            <strong>You have a game in progress</strong>
+            <span id="resume-summary">Pick up right where you left off.</span>
+          </div>
+          <div class="resume-actions">
+            <button class="button button-secondary" id="discard-game-button" type="button">Discard</button>
+            <button class="button button-primary button-small" id="resume-game-button" type="button">Resume game <span aria-hidden="true">→</span></button>
+          </div>
+        </aside>
+
+        <div class="setup-layout">
+          <section class="panel source-panel" aria-labelledby="source-heading">
+            <div class="panel-heading">
+              <div>
+                <span class="step-number">01</span>
+                <div>
+                  <h2 id="source-heading">Choose your questions</h2>
+                  <p>Start fresh online, import your own, or use the included board.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-tabs" role="tablist" aria-label="Question source">
+              <button class="source-tab is-selected" id="tab-api" role="tab" aria-selected="true" aria-controls="source-api" data-source="api" type="button">
+                <span class="tab-icon tab-icon-api" aria-hidden="true">✦</span>
+                <span><strong>Fresh &amp; random</strong><small>Live trivia API</small></span>
+                <span class="recommended">Popular</span>
+              </button>
+              <button class="source-tab" id="tab-custom" role="tab" aria-selected="false" aria-controls="source-custom" data-source="custom" type="button">
+                <span class="tab-icon" aria-hidden="true">↑</span>
+                <span><strong>Bring your own</strong><small>CSV or JSON file</small></span>
+              </button>
+              <button class="source-tab" id="tab-starter" role="tab" aria-selected="false" aria-controls="source-starter" data-source="starter" type="button">
+                <span class="tab-icon" aria-hidden="true">▦</span>
+                <span><strong>Starter board</strong><small>Bible basics</small></span>
+              </button>
+            </div>
+
+            <div class="source-content">
+              <div class="source-view is-active" id="source-api" role="tabpanel" aria-labelledby="tab-api">
+                <div class="source-view-heading">
+                  <div>
+                    <h3>Pick up to six categories</h3>
+                    <p>Leave every category unselected and we’ll surprise you.</p>
+                  </div>
+                  <button class="text-button" id="randomize-categories" type="button"><span aria-hidden="true">↝</span> Pick six for me</button>
+                </div>
+                <div class="category-options" id="category-options" aria-label="Trivia categories"></div>
+                <div class="selection-meta">
+                  <span id="category-selection-count">0 selected · 6 will be chosen at random</span>
+                  <span><span class="family-dot" aria-hidden="true"></span> Family-friendly filter</span>
+                </div>
+              </div>
+
+              <div class="source-view" id="source-custom" role="tabpanel" aria-labelledby="tab-custom" hidden>
+                <input id="question-file-input" type="file" accept=".csv,.json,text/csv,application/json" hidden>
+                <div class="file-drop" id="file-drop" tabindex="0" role="button" aria-controls="question-file-input">
+                  <div class="upload-illustration" aria-hidden="true">
+                    <svg viewBox="0 0 64 64"><path d="M12 5h29l11 11v43H12V5Z"/><path d="M41 5v13h11M24 38l8-8 8 8M32 30v18"/></svg>
+                  </div>
+                  <strong>Drop your question file here</strong>
+                  <span>or <u>choose a CSV or JSON file</u> from your device</span>
+                  <small>Required: category, question, answer, and value or price.</small>
+                </div>
+                <div class="file-help">
+                  <span>Processed privately on this device.</span>
+                  <button class="text-button" id="download-csv-button" type="button">Download CSV template</button>
+                  <button class="text-button" id="download-json-button" type="button">JSON example</button>
+                </div>
+                <div class="file-result" id="file-result" hidden aria-live="polite"></div>
+              </div>
+
+              <div class="source-view" id="source-starter" role="tabpanel" aria-labelledby="tab-starter" hidden>
+                <div class="starter-preview">
+                  <div class="starter-art" aria-hidden="true">
+                    <span class="starter-card card-back"></span>
+                    <span class="starter-card card-middle"></span>
+                    <span class="starter-card card-front"><b>BIBLE<br>BASICS</b><small>30 clues</small></span>
+                  </div>
+                  <div>
+                    <span class="ready-pill">Ready now</span>
+                    <h3>Bible Basics</h3>
+                    <p>A friendly all-ages board covering people, places, miracles, parables, books, and numbers.</p>
+                    <div class="mini-categories" id="starter-categories"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel settings-panel" aria-labelledby="settings-heading">
+            <div class="panel-heading compact">
+              <div>
+                <span class="step-number">02</span>
+                <div>
+                  <h2 id="settings-heading">Set up your teams</h2>
+                  <p>Scores begin at zero.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <div class="setting-label-row">
+                <label for="team-count">Teams</label>
+                <div class="number-stepper">
+                  <button id="team-minus" type="button" aria-label="Remove a team">−</button>
+                  <output id="team-count" aria-live="polite">2</output>
+                  <button id="team-plus" type="button" aria-label="Add a team">+</button>
+                </div>
+              </div>
+              <div class="team-inputs" id="team-inputs"></div>
+            </div>
+
+            <div class="setting-group">
+              <span class="setting-label">Clue timer</span>
+              <div class="segmented" id="timer-options" role="radiogroup" aria-label="Clue timer">
+                <button type="button" role="radio" aria-checked="false" data-seconds="0">Off</button>
+                <button type="button" role="radio" aria-checked="true" data-seconds="30" class="is-selected">30 sec</button>
+                <button type="button" role="radio" aria-checked="false" data-seconds="45">45 sec</button>
+                <button type="button" role="radio" aria-checked="false" data-seconds="60">60 sec</button>
+              </div>
+            </div>
+
+            <div class="toggles">
+              <div class="toggle-row">
+                <span><strong>Special clues</strong><small id="special-count-description">1 hidden wager tile · marked imports first</small></span>
+                <div class="number-stepper special-stepper">
+                  <button id="special-minus" type="button" aria-label="Remove a special clue">−</button>
+                  <output id="special-count" aria-live="polite" aria-describedby="special-count-description">1</output>
+                  <button id="special-plus" type="button" aria-label="Add a special clue">+</button>
+                </div>
+              </div>
+              <label class="toggle-row">
+                <span><strong>Incorrect penalties</strong><small>Subtract the clue value</small></span>
+                <input id="penalty-toggle" type="checkbox" checked>
+                <span class="toggle" aria-hidden="true"></span>
+              </label>
+            </div>
+
+            <button class="button button-primary start-button" id="start-game-button" type="button">
+              <span id="start-button-label">Create my game</span>
+              <span class="button-arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="start-note" id="start-note"><span aria-hidden="true">⌁</span> Requires internet for a fresh board</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen loading-screen" id="loading-screen" aria-labelledby="loading-title" hidden>
+        <div class="loader-stage">
+          <div class="board-loader" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p class="eyebrow"><span></span> Building your board</p>
+          <h2 id="loading-title">Gathering great questions…</h2>
+          <p id="loading-message">Choosing categories and sorting clues by difficulty.</p>
+          <div class="loading-progress" aria-hidden="true"><span id="loading-progress-bar"></span></div>
+          <button class="text-button loading-cancel" id="cancel-loading-button" type="button">Cancel and return to setup</button>
+        </div>
+      </section>
+
+      <section class="screen game-screen" id="game-screen" aria-labelledby="board-title" hidden>
+        <header class="game-toolbar">
+          <div>
+            <button class="back-button" id="game-setup-button" type="button"><span aria-hidden="true">←</span> Setup</button>
+            <div class="round-title">
+              <span id="game-label">Main board</span>
+              <h1 id="board-title">Sunday Showdown</h1>
+            </div>
+          </div>
+          <div class="game-status">
+            <span id="clues-remaining" aria-live="polite">30 clues left</span>
+            <div class="progress-track" aria-hidden="true"><span id="game-progress"></span></div>
+          </div>
+          <div class="toolbar-buttons">
+            <button class="toolbar-button" id="undo-button" type="button" disabled><span aria-hidden="true">↶</span> Undo</button>
+            <button class="toolbar-button" id="score-button" type="button"><span aria-hidden="true">±</span> Scores</button>
+            <button class="toolbar-button toolbar-accent" id="end-board-button" type="button">End board</button>
+          </div>
+        </header>
+
+        <div class="scoreboard" id="scoreboard" aria-label="Team scores" aria-live="polite"></div>
+        <div class="control-hint" id="control-hint"><span aria-hidden="true">◆</span> <strong id="control-team-name">Team One</strong> has control of the board</div>
+
+        <div class="board-wrap">
+        <div class="game-board" id="game-board" role="group" aria-label="Question board. Use arrow keys to move between available clues."></div>
+        </div>
+
+        <footer class="board-footer">
+          <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> Move</span>
+          <span><kbd>Enter</kbd> Open clue</span>
+          <span class="api-credit" id="api-credit" hidden>Questions from <a href="https://the-trivia-api.com/" target="_blank" rel="noreferrer">The Trivia API</a></span>
+        </footer>
+      </section>
+
+      <section class="screen final-screen" id="final-screen" aria-labelledby="final-title" hidden>
+        <div class="final-backdrop" aria-hidden="true"><span>?</span><span>?</span><span>?</span></div>
+        <div class="final-card">
+          <p class="eyebrow centered"><span></span> One last question <span></span></p>
+          <h1 id="final-title">Final Challenge</h1>
+          <div id="final-content"></div>
+        </div>
+      </section>
+
+      <section class="screen results-screen" id="results-screen" aria-labelledby="results-title" hidden>
+        <div class="results-card">
+          <div class="trophy" aria-hidden="true">★</div>
+          <p class="eyebrow centered"><span></span> Game complete <span></span></p>
+          <h1 id="results-title"><span id="winner-name">Team One</span> takes the win!</h1>
+          <p id="winner-score">Final score: $0</p>
+          <div class="final-rankings" id="final-rankings"></div>
+          <div class="results-actions">
+            <button class="button button-secondary" id="rematch-button" type="button">Play this board again</button>
+            <button class="button button-primary" id="new-game-button" type="button">Create a new game <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="clue-modal" hidden>
+    <section class="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-category" aria-describedby="clue-text">
+      <header class="clue-header">
+        <div>
+          <span id="clue-category">Category</span>
+          <strong id="clue-value">$200</strong>
+        </div>
+        <div class="clue-header-actions">
+          <div class="timer-chip" id="timer-chip" hidden aria-label="Clue timer">
+            <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="timer-base" cx="18" cy="18" r="15.5"/><circle class="timer-ring" id="timer-ring" cx="18" cy="18" r="15.5"/></svg>
+            <span id="timer-value">30</span>
+          </div>
+          <button class="modal-close" id="close-clue-button" type="button" aria-label="Close clue">×</button>
+        </div>
+      </header>
+
+      <div class="special-intro" id="special-intro" hidden>
+        <div class="special-burst" aria-hidden="true">✦</div>
+        <p>Special clue</p>
+        <h2>Choose your wager</h2>
+        <span>Only the team in control may answer.</span>
+        <label for="wager-input">Wager amount</label>
+        <div class="money-input"><span>$</span><input id="wager-input" type="number" min="0" step="100" inputmode="numeric"></div>
+        <small id="wager-help">Maximum wager: $1,000</small>
+        <button class="button button-gold" id="confirm-wager-button" type="button">Lock in wager</button>
+      </div>
+
+      <div class="clue-content" id="clue-content">
+        <div class="clue-stage-label"><span aria-hidden="true">✦</span> Clue</div>
+        <p class="clue-text" id="clue-text">Question appears here.</p>
+        <div class="choice-list" id="choice-list" hidden></div>
+        <div class="answer-panel" id="answer-panel" role="status" tabindex="-1" hidden>
+          <span>Correct response</span>
+          <strong id="answer-text">Answer appears here.</strong>
+        </div>
+      </div>
+
+      <footer class="clue-footer" id="clue-footer">
+        <div class="responder-section">
+          <span>Answering team</span>
+          <div class="responder-list" id="responder-list"></div>
+        </div>
+        <div class="clue-actions" id="clue-actions">
+          <button class="button button-secondary" id="no-score-button" type="button">No answer</button>
+          <button class="button button-reveal" id="reveal-button" type="button"><span aria-hidden="true">◉</span> Reveal response</button>
+          <button class="button button-wrong" id="wrong-button" type="button" hidden><span aria-hidden="true">×</span> Incorrect</button>
+          <button class="button button-correct" id="correct-button" type="button" hidden><span aria-hidden="true">✓</span> Correct</button>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="score-modal" hidden>
+    <section class="score-modal" role="dialog" aria-modal="true" aria-labelledby="score-modal-title">
+      <header><div><span class="eyebrow mini">Host controls</span><h2 id="score-modal-title">Adjust scores</h2></div><button class="modal-close" id="close-score-button" type="button" aria-label="Close score controls">×</button></header>
+      <p>Make a manual correction. Every change can be undone.</p>
+      <div class="score-editor" id="score-editor"></div>
+      <button class="button button-primary" id="done-score-button" type="button">Done</button>
+    </section>
+  </div>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+  <audio id="background-audio" preload="metadata"></audio>
+
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
