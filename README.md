@@ -4,9 +4,9 @@ A dependency-free, host-led classroom trivia game inspired by the familiar categ
 
 ## Hosted game
 
-The repository includes a GitHub Actions workflow that publishes the static game to GitHub Pages after every push to `master`. The expected public address is:
+The repository includes a GitHub Actions workflow that publishes the static game to GitHub Pages after every push to `master`. The configured custom-domain address is:
 
-**https://narrowpath20.github.io/Sunday_Showdown/**
+**https://sundayshowdown.com/**
 
 In the repository's **Settings → Pages** screen, set **Source** to **GitHub Actions** the first time the site is deployed.
 
